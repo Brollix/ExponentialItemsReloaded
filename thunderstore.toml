@@ -4,8 +4,8 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "brollixTeam"
 name = "ExponentialItemsReloaded_V2"
-versionNumber = "2.0.2"
-description = "V2 overhaul: Items stack with customizable scaling (Linear, Sqrt, or Exponential). Features Sqrt sublinear scaling (great for Huntress) and Linear y=2x."
+versionNumber = "2.1.0"
+description = "V2 overhaul: Items stack with customizable scaling (Sigmoid, Linear, Sqrt, or Exponential). Features new Sigmoid S-Curve hybrid mode."
 websiteUrl = "https://github.com/Brollix/ExponentialItemsReloaded"
 containsNsfw = false
 

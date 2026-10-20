@@ -1,8 +1,8 @@
 {
   "name": "ExponentialItemsReloaded_V2",
-  "version_number": "2.0.2",
+  "version_number": "2.1.0",
   "website_url": "https://github.com/Brollix/ExponentialItemsReloaded",
-  "description": "V2 overhaul: Items stack with customizable scaling (Linear, Sqrt, or Exponential). Features Sqrt sublinear scaling (great for Huntress) and Linear y=2x.",
+  "description": "V2 overhaul: Items stack with customizable scaling (Sigmoid, Linear, Sqrt, or Exponential). Features new Sigmoid S-Curve hybrid mode.",
   "dependencies": [
     "bbepis-BepInExPack-5.4.2100",
     "RiskofThunder-R2API_Core-5.0.0",

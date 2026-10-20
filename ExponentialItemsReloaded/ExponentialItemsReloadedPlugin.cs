@@ -12,23 +12,28 @@ public enum StackingMode
 {
 	Off,
 	Linear,
+	Sigmoid,
 	Sqrt,
 	Exponential
 }
 
 [BepInDependency("com.bepis.r2api.content_management", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("com.bepis.r2api.language", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInPlugin("com.cryptidlabs.exponentialitemsreloaded", "ExponentialItemsReloaded", "2.0.0")]
+[BepInPlugin("com.cryptidlabs.exponentialitemsreloaded", "ExponentialItemsReloaded", "2.1.0")]
 public class ExponentialItemsReloadedPlugin : BaseUnityPlugin
 {
 	public const string PluginGUID = "com.cryptidlabs.exponentialitemsreloaded";
 	public const string PluginName = "ExponentialItemsReloaded";
-	public const string PluginVersion = "2.0.0";
+	public const string PluginVersion = "2.1.0";
 
 	private static ArtifactDef exponentialArtifactDef;
 
 	private static ConfigEntry<bool> requireArtifactEnabled;
 	private static ConfigEntry<StackingMode> stackingMode;
+	private static ConfigEntry<float> sigmoidPeakBonus;
+	private static ConfigEntry<float> sigmoidGrowthRate;
+	private static ConfigEntry<float> sigmoidInflectionPoint;
+	private static ConfigEntry<float> sigmoidSqrtFactor;
 	private static ConfigEntry<int> linearMultiplier;
 	private static ConfigEntry<float> sqrtFactor;
 	private static ConfigEntry<int> maxStack;
@@ -52,7 +57,11 @@ public class ExponentialItemsReloadedPlugin : BaseUnityPlugin
 	public void Awake()
 	{
 		requireArtifactEnabled = Config.Bind<bool>("General", "Require Artifact Enabled", true, "If true, custom stacking only applies while Artifact of Exponents is enabled. If false, the mod is always active.");
-		stackingMode = Config.Bind<StackingMode>("General", "Stacking Mode", StackingMode.Sqrt, "Stacking calculation mode: Off (Vanilla 1x), Linear (y = M*x), Sqrt (sublinear root curve, great for Huntress/Attack Speed), or Exponential (original 2^n).");
+		stackingMode = Config.Bind<StackingMode>("General", "Stacking Mode", StackingMode.Sigmoid, "Stacking calculation mode: Off (Vanilla 1x), Linear (y = M*x), Sigmoid (S-Curve hybrid with Sqrt tail: starts at 1, ramps smoothly to ~44 at pickup 10, then tapers into controlled sublinear scaling), Sqrt (sublinear root curve), or Exponential (2^n).");
+		sigmoidPeakBonus = Config.Bind<float>("General", "Sigmoid Peak Bonus", 35.0f, "Bonus amplitude for Sigmoid mode. Default 35.0 gives ~44 stacks at pickup 10.");
+		sigmoidGrowthRate = Config.Bind<float>("General", "Sigmoid Growth Rate", 0.6f, "Steepness of the Sigmoid ramp (default 0.6).");
+		sigmoidInflectionPoint = Config.Bind<float>("General", "Sigmoid Inflection Point", 6.5f, "Pickup count at which acceleration peaks before tapering off towards pickup 10 (default 6.5).");
+		sigmoidSqrtFactor = Config.Bind<float>("General", "Sigmoid Sqrt Factor", 2.0f, "Sublinear scaling factor for late-game pickups after item 10 (default 2.0).");
 		linearMultiplier = Config.Bind<int>("General", "Linear Multiplier", 2, "Multiplier for Linear mode (e.g. 2 gives 2x stacks: 2, 4, 6, 8...).");
 		sqrtFactor = Config.Bind<float>("General", "Sqrt Factor", 2.2f, "Sublinear bonus factor for Sqrt mode (e.g. 2.2 gives 3, 5, 7, 8, 10, 11, 13...).");
 		maxStack = Config.Bind<int>("General", "Max Stack Size", 4096, "Maximum item stack count this mod will try to reach.");
@@ -90,7 +99,7 @@ public class ExponentialItemsReloadedPlugin : BaseUnityPlugin
 	private void RegisterArtifact()
 	{
 		LanguageAPI.Add("ARTIFACT_EXPONENTIALITEMS_NAME", "Artifact of Exponents");
-		LanguageAPI.Add("ARTIFACT_EXPONENTIALITEMS_DESC", "Items stack with advanced scaling (Linear, Sqrt, or Exponential) instead of one at a time.");
+		LanguageAPI.Add("ARTIFACT_EXPONENTIALITEMS_DESC", "Items stack with advanced scaling (Sigmoid S-Curve, Linear, Sqrt, or Exponential) instead of one at a time.");
 		exponentialArtifactDef = ScriptableObject.CreateInstance<ArtifactDef>();
 		exponentialArtifactDef.cachedName = "ExponentialItems";
 		exponentialArtifactDef.nameToken = "ARTIFACT_EXPONENTIALITEMS_NAME";
@@ -289,6 +298,22 @@ public class ExponentialItemsReloadedPlugin : BaseUnityPlugin
 		}
 	}
 
+	private static int EvaluateSigmoidStack(int n, float L, float k, float n0, float alpha)
+	{
+		if (n <= 0) return 0;
+		if (n == 1) return 1;
+
+		double sigAt1 = L / (1.0 + Math.Exp(-k * (1.0 - n0)));
+		double sqrtAt1 = alpha * Math.Sqrt(1.0);
+		double offset = sigAt1 + sqrtAt1;
+
+		double sig = L / (1.0 + Math.Exp(-k * (n - n0)));
+		double sqrt = alpha * Math.Sqrt(n);
+		double raw = n + (sig + sqrt - offset);
+
+		return Math.Max(n, (int)Math.Round(raw));
+	}
+
 	private static int GetNextTargetStack(int current)
 	{
 		int maxCap = Math.Max(1, maxStack.Value);
@@ -304,6 +329,35 @@ public class ExponentialItemsReloadedPlugin : BaseUnityPlugin
 			{
 				int mult = Math.Max(1, linearMultiplier.Value);
 				return Math.Min(maxCap, current + mult);
+			}
+
+			case StackingMode.Sigmoid:
+			{
+				if (current <= 0) return 1;
+				float L = Math.Max(1f, sigmoidPeakBonus.Value);
+				float k = Math.Max(0.05f, sigmoidGrowthRate.Value);
+				float n0 = Math.Max(1f, sigmoidInflectionPoint.Value);
+				float alpha = Math.Max(0.1f, sigmoidSqrtFactor.Value);
+
+				int low = 1;
+				int high = 5000;
+				int currentN = 1;
+				while (low <= high)
+				{
+					int mid = (low + high) / 2;
+					int val = EvaluateSigmoidStack(mid, L, k, n0, alpha);
+					if (val <= current)
+					{
+						currentN = mid;
+						low = mid + 1;
+					}
+					else
+					{
+						high = mid - 1;
+					}
+				}
+				int target = EvaluateSigmoidStack(currentN + 1, L, k, n0, alpha);
+				return Math.Min(maxCap, Math.Max(current + 1, target));
 			}
 
 			case StackingMode.Sqrt:
