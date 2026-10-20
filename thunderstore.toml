@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "brollixTeam"
 name = "ExponentialItemsReloaded_V2"
-versionNumber = "2.0.1"
+versionNumber = "2.0.2"
 description = "V2 overhaul: Items stack with customizable scaling (Linear, Sqrt, or Exponential). Features Sqrt sublinear scaling (great for Huntress) and Linear y=2x."
 websiteUrl = "https://github.com/Brollix/ExponentialItemsReloaded"
 containsNsfw = false
@@ -31,6 +31,10 @@ target = "icon_selected.png"
 [[build.copy]]
 source = "./icon_deselected.png"
 target = "icon_deselected.png"
+
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "CHANGELOG.md"
 
 [publish]
 repository = "https://thunderstore.io"
