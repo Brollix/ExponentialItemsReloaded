@@ -1,6 +1,6 @@
 {
   "name": "ExponentialItemsReloaded_V2",
-  "version_number": "2.0.0",
+  "version_number": "2.0.1",
   "website_url": "https://github.com/Brollix/ExponentialItemsReloaded",
   "description": "V2 overhaul: Items stack with customizable scaling (Linear, Sqrt, or Exponential). Features Sqrt sublinear scaling (great for Huntress) and Linear y=2x.",
   "dependencies": [

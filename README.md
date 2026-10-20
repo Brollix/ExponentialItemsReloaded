@@ -10,29 +10,29 @@ A modernized Risk of Rain 2 mod that enhances item stacking mechanics with confi
 
 ## What's New in v2.0?
 
-The original mod only supported pure exponential base-2 stacking ($2^n$), which quickly ballooned items like *Soldier's Syringe* (Attack Speed) into game-breaking numbers. Version 2.0 introduces **4 selectable stacking modes**:
+The original mod only supported pure exponential base-2 stacking (`2^n`), which quickly ballooned items like *Soldier's Syringe* (Attack Speed) into game-breaking numbers. Version 2.0 introduces **4 selectable stacking modes**:
 
-### 1. `Sqrt` Mode (Sublinear Square Root Curve) — *Recommended*
-* **Formula:** $S(n) = n + \lfloor A \cdot \sqrt{n} \rfloor$ (where $A$ is configurable via `Sqrt Factor`, default: `2.2`).
+### 1. Sqrt Mode (Sublinear Square Root Curve) - Recommended
+* **Formula:** `Stack(n) = n + round(A * sqrt(n))` (where `A` is configurable via `Sqrt Factor`, default: `2.2`).
 * **How it feels:** 
-  * 1st pickup ➡️ **3 stacks** (+45% attack speed / early power boost).
-  * 2nd pickup ➡️ **5 stacks** (+75%).
-  * 3rd pickup ➡️ **7 stacks** (+105%).
-  * 4th pickup ➡️ **8 stacks** (+120%).
-  * 5th pickup ➡️ **10 stacks** (+150%).
-  * 10th pickup ➡️ **17 stacks** (+255%).
+  * 1st pickup: **3 stacks** (+45% attack speed / early power boost)
+  * 2nd pickup: **5 stacks** (+75%)
+  * 3rd pickup: **7 stacks** (+105%)
+  * 4th pickup: **8 stacks** (+120%)
+  * 5th pickup: **10 stacks** (+150%)
+  * 10th pickup: **17 stacks** (+255%)
 * **Why it's great:** Gives an immediate agile start (especially on survivors like Huntress) while gracefully tapering off so you never clip through walls or freeze the game with particle overload.
 
-### 2. `Linear` Mode ($y = M \cdot x$)
-* **Formula:** Each pickup grants a configurable amount (default: $M = 2$).
-* **How it feels:** $2, 4, 6, 8, 10, 12...$ stacks.
+### 2. Linear Mode (y = M * x)
+* **Formula:** Each pickup grants a configurable amount (default: `M = 2`).
+* **How it feels:** `2, 4, 6, 8, 10, 12...` stacks.
 * **Why it's great:** Clean, predictable "double loot" progression.
 
-### 3. `Exponential` Mode ($B^x$)
-* **Formula:** Classic exponential scaling ($1, 2, 4, 8, 16, 32...$).
+### 3. Exponential Mode (Base^x)
+* **Formula:** Classic exponential scaling (`1, 2, 4, 8, 16, 32...`).
 * **Why it's great:** The chaotic sandbox mode for explosive runs.
 
-### 4. `Off` Mode (Vanilla 1x)
+### 4. Off Mode (Vanilla 1x)
 * Preserves the mod installed while reverting to 1x vanilla behavior.
 
 ---
