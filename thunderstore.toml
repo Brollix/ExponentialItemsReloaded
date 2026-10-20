@@ -1,0 +1,38 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "brollixTeam"
+name = "ExponentialItemsReloaded_V2"
+versionNumber = "2.0.0"
+description = "V2 overhaul: Items stack with customizable scaling (Linear, Sqrt, or Exponential). Features Sqrt sublinear scaling (great for Huntress) and Linear y=2x."
+websiteUrl = "https://github.com/Brollix/ExponentialItemsReloaded"
+containsNsfw = false
+
+[package.dependencies]
+bbepis-BepInExPack = "5.4.2100"
+RiskofThunder-R2API_Core = "5.0.0"
+RiskofThunder-R2API_ContentManagement = "1.0.0"
+RiskofThunder-R2API_Language = "1.0.0"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "./build"
+
+[[build.copy]]
+source = "./bin/Release/netstandard2.1/ExponentialItemsReloaded.dll"
+target = "ExponentialItemsReloaded.dll"
+
+[[build.copy]]
+source = "./icon_selected.png"
+target = "icon_selected.png"
+
+[[build.copy]]
+source = "./icon_deselected.png"
+target = "icon_deselected.png"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["riskofrain2"]
+categories = ["ai-generated", "items", "artifacts", "tweaks", "mods"]
